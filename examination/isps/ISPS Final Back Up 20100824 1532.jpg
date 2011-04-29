@@ -1,0 +1,301 @@
+-- MySQL Administrator dump 1.4
+--
+-- ------------------------------------------------------
+-- Server version	4.1.11-nt
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+
+
+--
+-- Create schema isps
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ isps;
+USE isps;
+
+--
+-- Table structure for table `isps`.`admin`
+--
+
+DROP TABLE IF EXISTS `admin`;
+CREATE TABLE `admin` (
+  `id` int(11) NOT NULL auto_increment,
+  `empno` varchar(20) NOT NULL default '',
+  `lname` varchar(100) NOT NULL default '',
+  `fname` varchar(100) NOT NULL default '',
+  `mname` varchar(100) NOT NULL default '',
+  `password` varchar(100) default NULL,
+  `position` varchar(100) NOT NULL default '',
+  `contactno` varchar(15) NOT NULL default '',
+  `email` varchar(50) NOT NULL default '',
+  `level` varchar(50) NOT NULL default '0',
+  `sync` tinyint(5) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`admin`
+--
+
+/*!40000 ALTER TABLE `admin` DISABLE KEYS */;
+INSERT INTO `admin` (`id`,`empno`,`lname`,`fname`,`mname`,`password`,`position`,`contactno`,`email`,`level`,`sync`) VALUES 
+ (1,'2010-111','CORONACION','RYNELLE','PINSAN','eed71a84b77ebe093326df8dfe49b7f0','IT STAFF','639198003708','rynelle.coronacion@veritas.com.ph','43d3810c065f4bf3550fac648d605fcb',1),
+ (2,'VMC-1122','CORONACION2','RYNELLE2','PINSAN2','eed71a84b77ebe093326df8dfe49b7f0','IT STAFF 2','639198003708','rynelle.coronacion@veritas.com.ph','43d3810c065f4bf3550fac648d605fcb',0),
+ (3,'2010-112','CORONACION3','RYNELLE3','PINSAN3','eed71a84b77ebe093326df8dfe49b7f0','IT STAFF 3','639198003708','rynelle.coronacion@veritas.com.ph','43d3810c065f4bf3550fac648d605fcb',0);
+/*!40000 ALTER TABLE `admin` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`crew`
+--
+
+DROP TABLE IF EXISTS `crew`;
+CREATE TABLE `crew` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `bdate` date NOT NULL default '0000-00-00',
+  `fname` varchar(50) NOT NULL default '',
+  `gname` varchar(50) NOT NULL default '',
+  `mname` varchar(50) NOT NULL default '',
+  `contact` varchar(45) NOT NULL default '',
+  `crewcode` varchar(45) NOT NULL default '',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='InnoDB free: 72704 kB; InnoDB free: 7168 kB';
+
+--
+-- Dumping data for table `isps`.`crew`
+--
+
+/*!40000 ALTER TABLE `crew` DISABLE KEYS */;
+/*!40000 ALTER TABLE `crew` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`examtype`
+--
+
+DROP TABLE IF EXISTS `examtype`;
+CREATE TABLE `examtype` (
+  `id` int(11) NOT NULL auto_increment,
+  `examname` varchar(100) NOT NULL default '',
+  `whocreated` varchar(100) NOT NULL default '',
+  `totalno` tinyint(4) NOT NULL default '0',
+  `totaltime` varchar(15) NOT NULL default '',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`examtype`
+--
+
+/*!40000 ALTER TABLE `examtype` DISABLE KEYS */;
+INSERT INTO `examtype` (`id`,`examname`,`whocreated`,`totalno`,`totaltime`) VALUES 
+ (13,'CHIEF MATE','2010-111',60,'60 Minutes'),
+ (14,'DECK RATINGS','2010-111',60,'60 Minutes'),
+ (15,'ENGINE RATINGS','2010-111',60,'60 Minutes'),
+ (16,'FIRST ASSISTANT ENGINEER','2010-111',60,'60 Minutes'),
+ (17,'ISPS','2010-111',60,'60 Minutes'),
+ (18,'MASTER MARINER','2010-111',60,'60 Minutes'),
+ (19,'SECOND ASSISTANT ENGINEER','2010-111',60,'60 Minutes'),
+ (20,'SECOND MATE','2010-111',60,'60 Minutes'),
+ (21,'THIRD ASSISTANT ENGINEER','2010-111',60,'60 Minutes'),
+ (22,'THIRD MATE','2010-111',60,'60 Minutes'),
+ (23,'CHIEF ENGINEER','2010-111',60,'60 Minutes');
+/*!40000 ALTER TABLE `examtype` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`passing`
+--
+
+DROP TABLE IF EXISTS `passing`;
+CREATE TABLE `passing` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `grade` tinyint(3) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`passing`
+--
+
+/*!40000 ALTER TABLE `passing` DISABLE KEYS */;
+INSERT INTO `passing` (`id`,`grade`) VALUES 
+ (1,80);
+/*!40000 ALTER TABLE `passing` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`questions`
+--
+
+DROP TABLE IF EXISTS `questions`;
+CREATE TABLE `questions` (
+  `id` int(11) NOT NULL auto_increment,
+  `empno` varchar(20) NOT NULL default '',
+  `question` longtext NOT NULL,
+  `ans1` text NOT NULL,
+  `ans2` text NOT NULL,
+  `ans3` text,
+  `ans4` text,
+  `anscorrect` varchar(5) NOT NULL default '',
+  `examtype` tinyint(2) unsigned NOT NULL default '0',
+  `whencreated` datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`questions`
+--
+
+/*!40000 ALTER TABLE `questions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `questions` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`type`
+--
+
+DROP TABLE IF EXISTS `type`;
+CREATE TABLE `type` (
+  `id` int(11) NOT NULL auto_increment,
+  `type` varchar(100) NOT NULL default '',
+  `sync` tinyint(1) unsigned NOT NULL default '0',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`type`
+--
+
+/*!40000 ALTER TABLE `type` DISABLE KEYS */;
+INSERT INTO `type` (`id`,`type`,`sync`) VALUES 
+ (1,'CHIEF ENGINEER',0),
+ (2,'CHIEF MATE',0),
+ (3,'DECK RATINGS',0),
+ (4,'ENGINE RATINGS',0),
+ (5,'FIRST ASSISTANT ENGINEER',0),
+ (6,'ISPS',0),
+ (7,'MASTER MARINER',0),
+ (8,'SECOND ASSISTANT ENGINEER',0),
+ (9,'SECOND MATE',0),
+ (10,'THIRD ASSISTANT ENGINEER',0),
+ (11,'THIRD MATE',0);
+/*!40000 ALTER TABLE `type` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`users`
+--
+
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL auto_increment,
+  `crewcode` varchar(20) NOT NULL default '',
+  `passcode` varchar(20) NOT NULL default '',
+  `exam` varchar(50) NOT NULL default '',
+  `takeno` varchar(5) NOT NULL default '',
+  `fname` varchar(50) NOT NULL default '',
+  `gname` varchar(50) NOT NULL default '',
+  `mname` char(1) NOT NULL default '',
+  `activated` tinyint(1) unsigned NOT NULL default '0',
+  `testdate` datetime NOT NULL default '0000-00-00 00:00:00',
+  `bdate` date NOT NULL default '0000-00-00',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`users`
+--
+
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`users_exam`
+--
+
+DROP TABLE IF EXISTS `users_exam`;
+CREATE TABLE `users_exam` (
+  `id` int(11) NOT NULL auto_increment,
+  `crewcode` varchar(15) NOT NULL default '',
+  `qid` int(11) NOT NULL default '0',
+  `ans` varchar(5) default NULL,
+  `correct` tinyint(2) NOT NULL default '0',
+  `take` tinyint(3) unsigned NOT NULL default '0',
+  `examdate` date NOT NULL default '0000-00-00',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`users_exam`
+--
+
+/*!40000 ALTER TABLE `users_exam` DISABLE KEYS */;
+/*!40000 ALTER TABLE `users_exam` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`withdraw`
+--
+
+DROP TABLE IF EXISTS `withdraw`;
+CREATE TABLE `withdraw` (
+  `id` int(10) unsigned NOT NULL auto_increment,
+  `bdate` date NOT NULL default '0000-00-00',
+  `fname` varchar(100) NOT NULL default '',
+  `gname` varchar(100) NOT NULL default '',
+  `mname` varchar(45) NOT NULL default '',
+  `crewcode` varchar(45) NOT NULL default '',
+  `contact` varchar(45) NOT NULL default '',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`withdraw`
+--
+
+/*!40000 ALTER TABLE `withdraw` DISABLE KEYS */;
+/*!40000 ALTER TABLE `withdraw` ENABLE KEYS */;
+
+
+--
+-- Table structure for table `isps`.`xxx_admin`
+--
+
+DROP TABLE IF EXISTS `xxx_admin`;
+CREATE TABLE `xxx_admin` (
+  `id` int(11) NOT NULL auto_increment,
+  `empno` varchar(20) NOT NULL default '',
+  `lname` varchar(10) NOT NULL default '',
+  `fname` varchar(10) NOT NULL default '',
+  `mname` varchar(10) NOT NULL default '',
+  `password` varchar(10) NOT NULL default '',
+  `position` varchar(10) NOT NULL default '',
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `isps`.`xxx_admin`
+--
+
+/*!40000 ALTER TABLE `xxx_admin` DISABLE KEYS */;
+INSERT INTO `xxx_admin` (`id`,`empno`,`lname`,`fname`,`mname`,`password`,`position`) VALUES 
+ (1,'administrator','XXXXXXXXXX','XXXXXXXXXX','XXXXXXXXXX','veritas','XXXXXXXXXX');
+/*!40000 ALTER TABLE `xxx_admin` ENABLE KEYS */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

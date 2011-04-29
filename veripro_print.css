@@ -1,0 +1,42 @@
+body {
+	font-size: 100%; font-family: Arial, sans-serif;
+	color: Black; margin: 0; padding: 0;
+}
+
+table {
+	font-size: 10pt;
+}
+
+table.heading th {
+	font-size: 14pt;
+	font-weight: bold;
+	text-align: center;
+}
+
+table.heading td {
+	font-size: 10pt;
+	font-weight: bold;
+	text-align: center;
+}
+
+table.details th {
+	font-size: 9pt;
+	font-weight: bold;
+	text-align: left;
+}
+
+table.details td {
+	font-size: 8pt;
+	text-align: left;
+}
+
+table.details tr.colhdr {
+	font-weight: Bold;
+	text-decoration: underline;
+}
+
+.right {
+	text-align: right;
+}
+
+

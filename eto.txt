@@ -1,0 +1,18 @@
+ALTER TABLE `veritas`.`crewevalhdr`
+ADD COLUMN `EFEBY1` varchar(45),
+ADD COLUMN `EFEDATE1` datetime default NULL,
+ADD COLUMN `EFE2` int(10) unsigned default NULL COMMENT 'Total eval for further employment',
+ADD COLUMN `EFEBY2` varchar(45) default NULL,
+ADD COLUMN `EFEDATE2` datetime default NULL,
+ADD COLUMN `EFE3` int(10) unsigned default NULL COMMENT 'Total eval for further employment',
+ADD COLUMN `EFEBY3` varchar(45) default NULL,
+ADD COLUMN `EFEDATE3` datetime default NULL,
+ADD COLUMN `EPR1` int(10) unsigned default NULL COMMENT 'eval for promotion to rank',
+ADD COLUMN `EPRBY1` varchar(45) default NULL,
+ADD COLUMN `EPRDATE1` datetime default NULL,
+ADD COLUMN `EPR2` int(10) unsigned default NULL COMMENT 'eval for promotion to rank',
+ADD COLUMN `EPRBY2` varchar(45) default NULL,
+ADD COLUMN `EPRDATE2` datetime default NULL,
+ADD COLUMN `EPR3` int(10) unsigned default NULL COMMENT 'eval for promotion to rank',
+ADD COLUMN `EPRBY3` varchar(45) default NULL,
+ADD COLUMN `EPRDATE3` datetime default NULL ;

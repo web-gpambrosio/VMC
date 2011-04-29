@@ -1,0 +1,368 @@
+body {
+	font-size: 100%; font-family: Arial, Verdana, Geneva, Helvetica, sans-serif;
+	color: Black;
+	margin : 0;
+	behavior: url(csshover.htc);
+}
+
+.odd {
+	background: #FFFFA8;
+}
+
+.even {
+	background: #FFFFFF;
+}
+
+A {
+	cursor: hand;
+}
+
+A:link {
+	text-decoration: none;
+	color: Blue;
+}
+
+A:visited {
+	text-decoration: none;
+	color: Black;
+}
+
+A:active {
+	text-decoration: none;
+	color: #0F66CD;
+}
+
+A:hover {
+	text-decoration: none;
+	color: Red;
+}
+
+/* NAVIGATION TOOLBAR for FILE-MENU*/
+
+
+div#nav {
+	float: right;
+	margin: 90px 0 0 8em;
+	background: Black;
+	border: 1px solid Black;
+	font-size: 0.8em;
+}
+
+div#nav ul {
+	margin: 0; 
+	padding: 0; 
+	background-color: #DCDCDC;
+	border: 1px solid Black; 
+	border-width: 0 1px;
+}
+
+div#nav li {
+	position: relative; 
+	list-style: none; 
+	margin: 0;
+	float: left; 
+	width: 8em; 
+	line-height: 1em;
+}
+
+div#nav li:hover {
+	background: #EBB;
+}
+
+div#nav li.submenu {
+	background: 95% 50% no-repeat;
+}
+
+div#nav li.submenu:hover {
+	background-color: White;
+}
+
+div#nav li a {
+	color: Red;
+	display: block; 
+	padding: 0.25em 0 0.25em 0.5em;
+	text-decoration: none; 
+	width: 6.5em;
+}
+
+div#nav>ul a {
+	width: auto;
+}
+
+div#nav ul ul {
+	position: absolute; 
+	width: 8em;
+	display: none;
+}
+
+div#nav ul ul li {
+	border-bottom: 1px solid Black;
+}
+
+div#nav li.submenu {
+	background-image: url(submenu.gif);
+}
+
+
+div#nav ul.level1 li.submenu:hover ul.level2,
+div#nav ul.level2 li.submenu:hover ul.level3 {
+	display:block;
+}
+
+div#nav ul.level2 {
+	top: 1.5em; 
+	left: -1px;
+}
+
+div#nav ul.level3 {
+	top: -1px; 
+	left: 8em;
+	border-top: 1px solid #CCC;
+}
+
+/* END OF NAVIGATION TOOLBAR for FILE-MENU*/
+
+
+/* TAB for POOLING */ 
+#tabsite ul {
+	margin: 0;
+	padding: 0;
+	font-size: 0.8em;
+}
+#tabsite li {
+	float: left;
+	background-image: url(gif/left_both.gif);
+	background-repeat: no-repeat;
+	background-position: left top;
+	margin: 0;
+	padding: 0 0 0 9px;
+  	border-bottom:1px solid #765;
+}
+
+#tabsite a {
+	display: block;
+	background-image: url(gif/right_both.gif);
+	background-repeat: no-repeat;
+	background-position: right top;
+	padding:2px 5px 2px 0px;
+	color: black;
+	text-decoration: none;
+	font-family: Arial, Georgia, Times, "Times New Roman", serif;
+}
+
+#tabsite #currentlipool {
+	/*background: url(dropmenu.gif);*/
+ 	background-position:0% -150px;
+  	border-width:0;
+
+}
+
+#tabsite #currentpool {
+
+ 	background-position:100% -150px;
+  padding-bottom:1px;
+  font-weight: bold;
+  color:red;
+
+}
+/* END OF TAB for POOLING*/ 
+
+/* TAB for 201 in POOLING TESTING*/ 
+#tab201site {
+	width: 100%;
+}
+
+#tab201site ul {
+	margin: 0;
+	padding: 0;
+	font-size: 0.8em;
+
+}
+
+#tab201site li {
+	float: left;
+	background-image: url(gif/left_both.gif);
+	background-repeat: no-repeat;
+	background-position: left top;
+	margin: 0;
+	padding: 0 0 0 9px;
+  	border-bottom:1px solid #765;
+}
+
+#tab201site a {
+	display: block;
+	background-image: url(gif/right_both.gif);
+	background-repeat: no-repeat;
+	background-position: right top;
+	padding:2px 5px 2px 0px;
+	color: black;
+	text-decoration: none;
+	font-family: Arial, Georgia, Times, "Times New Roman", serif;
+}
+
+#tab201site #currentli201 {
+	/*background: url(dropmenu.gif);*/
+ 	background-position:0% -150px;
+  	border-width:0;
+}
+
+#tab201site #current201 {
+
+ 	background-position:100% -150px;
+  padding-bottom:2px;
+  font-weight: bold;
+  color:red;
+
+}
+/* END OF TAB for 201 in POOLING TESTING*/ 
+
+/* ADDED BY GPA  */
+
+.sectiontitle {
+	width: 100%;
+	background-color: #CCCC99;
+	color: #CC0000;
+	text-align: center;
+	font-size: 0.8em;
+	font-weight: bold;
+	border: 1px solid black;
+}
+
+div.outside {
+	border: 2px solid black
+}
+
+div.popup {
+	border: 1px solid Gray;
+	font-size: 0.7em;
+	background-color: #66CCFF;
+}
+
+div.loading {
+	border: 2px solid White;
+	background-color: Black;
+	color: Red;
+	text-align: center;
+}
+
+div.navbar {
+	border: 1px solid black;
+	background-color: #6666CC;
+}
+
+div.navbar table {
+	font-size: 0.9em;
+	color: #CCCCCC;
+	font-weight: bold;
+	text-align: center;
+	vertical-align: top;
+	width: 100%;
+}
+
+.wintitle {
+	font-size: 1.5em;
+	font-weight: bold;
+	background-color: Navy;
+	color: Yellow;
+	text-align: center;
+	border: ridge;
+	width: 100%;
+}
+
+table.editrow {
+	font-size: 0.8em;
+	text-align: left;
+	color: Black;
+	
+}
+
+table.editrow input[type=button] {
+	font-size: 0.8em;
+	color: red;
+}
+
+table.editrow th {
+	font-weight: bold;
+}
+
+table.editrow td {
+
+}
+
+table.listrow {
+	font-size: 0.7em;
+	text-align: left;
+}
+
+table.listrow th{
+	color: Black;
+	font-weight: bold;
+	vertical-align: top;
+}
+
+table.listrow td {
+	color: Blue;
+}
+
+table.listcol {
+	font-size: 0.7em;
+	color: Black;
+	width: 100%;
+	background: Silver;
+}
+
+table.listcol th {
+	font-weight: bold;
+	text-align: center;
+	text-decoration: underline;
+	vertical-align: top;
+	background: White;
+}
+
+table.listcol td {
+	vertical-align: top;
+}
+
+.important {
+	color: Red;
+	font-size: larger;
+	font-weight: bolder;
+}
+
+a.btnview {
+	color: Red;
+	font-size: 0.8em;
+	font-weight: bold;
+}
+
+#buttoncol {
+	font-size: 0.9em;
+	font-weight: Bold;
+	color: Red;
+}
+
+/* FOR SETUP  */
+
+table.setup {
+	font-size: 0.75em;
+	color: Black;
+}
+
+table.setup th {
+	font-weight: bold;
+	text-align: left;
+}
+
+
+/* END SETUP */
+
+/* ONLINE APP */
+
+.error {
+	color: Red;
+	font-size: 0.9em;
+	font-weight: bolder;
+}
+
+/* END OF ONLINE APP */
+

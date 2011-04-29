@@ -1,0 +1,991 @@
+<?php
+
+include('veritas/connectdb.php');
+
+$currentdate = date('Y-m-d H:i:s');
+$datenow = date('d F Y');
+$basedir = "idpics/";
+$basedirdocs = "docimages/";
+
+$bgcolor = "white";
+
+if (isset($_POST['applicantno']))
+	$applicantno = $_POST['applicantno'];
+
+if (isset($_POST['appno']))
+	$appno = $_POST['appno'];
+
+if (isset($_POST['actiontxt']))
+	$actiontxt = $_POST['actiontxt'];
+	
+if (isset($_POST["searchkey"]))
+	$searchkey = $_POST["searchkey"];
+	
+if (isset($_POST["searchby"]))
+	$searchby = $_POST["searchby"];
+
+function checkpath($path)
+{
+	if (is_file($path))
+		return true;
+	else 
+		return false;
+}
+	
+	
+function imageScale($image, $newWidth, $newHeight)
+{
+    if(!$size = @getimagesize($image))
+        die("Unable to get info on image $image");
+    $ratio = ($size[0] / $size[1]);
+    //scale by height
+    if($newWidth == -1)
+    {
+        $ret[1] = $newHeight;
+        $ret[0] = round(($newHeight * $ratio));
+    }
+    else if($newHeight == -1)
+    {
+        $ret[0] = $newWidth;
+        $ret[1] = round(($newWidth / $ratio));
+    }
+    else
+        die("Scale Error");
+    return $ret;
+} 
+	
+
+//$divhide = "display:none;";
+$disableprint = "disabled=\"disabled\"";
+$disableupload = "";
+
+$showmultiple = "visibility:hidden;";
+$multiple = 0;
+
+switch ($actiontxt)
+{
+	
+	case "find"		:
+		
+			switch ($searchby)
+			{
+				case "1"	: //APPLICANT NO
+					
+						$qrysearch = mysql_query("SELECT APPLICANTNO FROM crew WHERE APPLICANTNO=$searchkey ORDER BY APPLICANTNO") or die(mysql_error());
+					
+					break;
+				case "2"	: //CREW CODE
+					
+						$qrysearch = mysql_query("SELECT APPLICANTNO FROM crew WHERE CREWCODE=$searchkey ORDER BY CREWCODE") or die(mysql_error());
+					
+					break;
+				case "3"	: //FAMILY NAME
+					
+						$qrysearch = mysql_query("SELECT APPLICANTNO FROM crew WHERE FNAME LIKE '$searchkey%' ORDER BY FNAME") or die(mysql_error());
+					
+					break;
+				case "4"	: //GIVEN NAME
+					
+						$qrysearch = mysql_query("SELECT APPLICANTNO FROM crew WHERE GNAME LIKE '$searchkey%' ORDER BY GNAME") or die(mysql_error());
+					
+					break;
+			}
+		
+			if (mysql_num_rows($qrysearch) == 1)  //SINGLE ENTRY FOUND
+			{
+				$rowsearch = mysql_fetch_array($qrysearch);
+				$applicantno = $rowsearch["APPLICANTNO"];
+			}
+			elseif (mysql_num_rows($qrysearch) > 1)  //MULTIPLE ENTRY FOUND
+			{
+				$showmultiple = "visibility:show;";
+				$multiple = 1;
+			}
+			else 
+			{
+				$applicantno="";
+				$errormsg = "Search Key -- '$searchkey' Not Found.";
+			}
+			
+		
+		break;
+		
+	case "closewindow"	:
+		
+			$showmultiple = "visibility:hidden;";
+			$multiple = 0;
+		
+		break;
+	
+	case "search"	:
+		
+			$qryappsearch = mysql_query("SELECT APPLICANTNO,PRINTED FROM applicant 
+								WHERE APPLICANTNO='$applicantno' AND AGREED=1 
+								") or die(mysql_error());
+			
+			if (mysql_num_rows($qryappsearch) > 0)
+			{
+				$rowappsearch = mysql_fetch_array($qryappsearch);
+				$printdate = date('m/d/Y H:i:s',strtotime($rowappsearch["PRINTED"]));
+				
+				$divhide = "display:block;";
+			}
+			else 
+			{
+				$searcherror = "Applicant No. $applicantno does not exists.";
+				$applicantno = "";
+			}
+		
+		
+		break;
+		
+	case "upload"	:
+
+		//FILE UPLOAD TO SERVER....
+
+//		$basedir = $_SERVER['DOCUMENT_ROOT'];
+//		$basedir = "/usr/local/www/data";
+//		$basedir = "idpics/";
+		
+		$uploaded = 0;
+		$uploadmsg = "";
+
+		$fname = $_FILES['uploadedfile']['name'];  //ACTUAL UPLOAD FILENAME
+		$parts = pathinfo($fname);
+		$ext = $parts['extension'];
+		$ext = strtoupper($ext);
+		
+		$newfile = $basedir . $applicantno . "." .$ext;
+		
+		if ($applicantno != "")
+		{
+			if (preg_match('/^(JPE?G|jpe?g)$/',$ext)) 
+			{
+	
+				$error = $_FILES['uploadedfile']['error'];
+				$tmp_name = $_FILES['uploadedfile']['tmp_name'];
+				
+				if ($error==UPLOAD_ERR_OK) 
+				{
+					if ($_FILES['uploadedfile']['size'] > 0)
+					{
+						if(move_uploaded_file($tmp_name, $newfile))
+						{
+				      		$uploadmsg = "File: $fname uploaded successfully.";
+						}
+				      	else 
+				      	{
+				      		$uploadmsg = "File upload failed.";
+				      	}
+					}
+					else
+					{
+						$uploadmsg = "File: $fname is empty.";
+					}
+				}
+				else if ($error==UPLOAD_ERR_NO_FILE) 
+					{
+						$uploadmsg = "No files specified.";
+					} 
+					else
+					{
+						$uploadmsg = "File Upload failed.";
+					}
+					
+				//END OF FILE UPLOAD TO SERVER...			
+				
+			}
+			else 
+				$uploadmsg = "[$ext] - File is not JPG or GIF.";
+		}
+
+		break;	
+	
+	case "deletepic":
+		
+			$file = $basedir . $appno . ".JPG";
+			unlink($file);
+			
+			$applicantno = $appno;
+	
+		break;
+		
+	case "print"	:
+			
+			$qryprintsave = mysql_query("UPDATE applicant SET PRINTED='$currentdate' WHERE APPLICANTNO=$appno") or die(mysql_error());
+			
+			$applicantno = $appno;
+			
+		break;
+}
+
+if ($applicantno == "")
+{
+	$disableupload = "disabled=\"disabled\"";
+}
+else 
+{
+	$disableprint = "";
+	$bgcolor = "#CCFF99";
+	
+	include("include/datasheet.inc");
+}
+
+echo "
+<html>\n
+<head>\n
+
+<title>Applicant Picture Loading</title>
+
+<link rel=\"StyleSheet\" type=\"text/css\" href=\"veripro.css\" />
+<link rel=\"stylesheet\" type=\"text/css\" href=\"veripro_print.css\">
+
+<script type='text/javascript' src='veripro.js'></script>
+
+<script language=\"javascript\" src=\"popcalendar.js\"></script>
+
+</head>
+<body style=\"\">\n
+
+
+<span class=\"wintitle\">APPLICATION FORM - PICTURE UPLOADING</span>
+
+<form name=\"appsearch\" method=\"POST\">
+	<div style=\"width:823px;height:50px;background-color:#DCDCDC;margin-left:10px;margin-top:10px;border:1px solid black;\" >
+	
+	<table width=\"100%\" style=\"font-size:0.8em;font-weight:Bold;\">
+		<tr>
+			<th>Search Key &nbsp;&nbsp;
+				<select name=\"searchby\" onchange=\"searchkey.value='';searchkey.focus();\">
+					<option value=\"\">--Select Search Key--</option>
+				";
+
+				$selected1 = "";
+				$selected2 = "";
+				$selected3 = "";
+				$selected4 = "";
+
+				switch ($searchby)
+				{
+					case "1"	: //BY APPLICANT NO
+							$selected1 = "SELECTED";
+						break;
+					case "2"	: //BY CREW CODE
+							$selected2 = "SELECTED";
+						break;
+					case "3"	: //BY FAMILY NAME
+							$selected3 = "SELECTED";
+						break;
+					case "4"	: //BY GIVEN NAME
+							$selected4 = "SELECTED";
+						break;
+				}
+
+			echo "
+					<option $selected1 value=\"1\">APPLICANT NO</option>
+					<option $selected2 value=\"2\">CREW CODE</option>
+					<option $selected3 value=\"3\">FAMILY NAME</option>
+					<option $selected4 value=\"4\">GIVEN NAME</option>
+				</select>
+			</th>
+			<td><input type=\"text\" name=\"searchkey\" size=\"40\" value=\"$searchkey\" onkeyup=\"this.value=this.value.toUpperCase()\" 
+					style=\"color:Red;font-weight:Bold;\" onkeydown=\"if(event.keyCode==13) {btnfind.focus();}\"/>
+					
+				<input type=\"button\" value=\"Find\" name=\"btnfind\" onclick=\"actiontxt.value='find';submit();\" />
+			</td>
+			<td>
+				<input type=\"button\" name=\"btnprint\" value=\"Print Data Sheet\" 
+					onclick=\"openWindow('repcrewdatasheet.php?applicantno=$applicantno', 'repdatasheet' ,900, 650);\" />
+			</td>
+		</tr>
+	</table>
+</div>
+
+<div style=\"position:absolute;left:112px;height:184px;width:600px;height:400px;background-color:#6699FF;
+				border:2px solid black;overflow:auto;$showmultiple \">
+	<span class=\"sectiontitle\">MULTIPLE ENTRY FOUND&nbsp;-&nbsp;
+		<a href=\"#\" onclick=\"actiontxt.value='closewindow';submit();\">[Close Window]</a>
+	</span>
+	<br />
+	
+	<table width=\"100%\" class=\"listcol\">
+		<tr>
+			<th width=\"15%\">APPLICANT NO</th>
+			<th width=\"15%\">CREW CODE</th>
+			<th width=\"20%\">FNAME</th>
+			<th width=\"20%\">GNAME</th>
+			<th width=\"20%\">MNAME</th>
+			<th width=\"10%\">STATUS</th>
+		</tr>
+	";
+		if ($multiple == 1)
+		{
+			while ($rowmultisearch = mysql_fetch_array($qrysearch))
+			{
+				$appno2 = $rowmultisearch["APPLICANTNO"];
+				
+				$qrygetinfo = mysql_query("SELECT APPLICANTNO,CREWCODE,FNAME,GNAME,MNAME,STATUS
+											FROM crew 
+											WHERE APPLICANTNO=$appno2
+										") or die(mysql_error());
+				
+				$rowgetinfo = mysql_fetch_array($qrygetinfo);
+
+				$info1 = $rowgetinfo["APPLICANTNO"];
+				$info2 = $rowgetinfo["CREWCODE"];
+				$info3 = $rowgetinfo["FNAME"];
+				$info4 = $rowgetinfo["GNAME"];
+				$info5 = $rowgetinfo["MNAME"];
+				if ($rowgetinfo["STATUS"] == 1)
+					$info6 = "ACTIVE";
+				else 
+					$info6 = "INACTIVE";
+				
+				echo "
+				<tr ondblclick=\"actiontxt.value='closewindow';applicantno.value='$info1';appsearch.submit();
+								\">
+					<td align=\"center\">$info1</td>
+					<td align=\"center\">$info2</td>
+					<td>$info3&nbsp;</td>
+					<td>$info4&nbsp;</td>
+					<td>$info5&nbsp;</td>
+					<td align=\"center\">$info6</td>
+				</tr>
+				
+				";
+			}
+		}
+			
+	echo "
+	</table>
+	<br />
+	<center>
+		<a href=\"#\" style=\"font-size:0.8em;font-weight:Bold;\" onclick=\"actiontxt.value='closewindow';submit();\">Close Window</a>
+	</center>
+	<br />
+</div>
+
+
+<div style=\"margin-left:10px;margin-top:10px;width:823px;height:450px;border:1px solid black;overflow:auto;\">
+
+	<div style=\"width:80%;height:60px;float:left;background-color:White;overflow:hidden;\">
+		<center>
+			<span style=\"font-size:1em;font-weight:Bold;\">VERITAS MARITIME CORPORATION</span><br />
+			<span style=\"font-size:0.8em;font-weight:Bold;\">CREW PERSONAL DATA SHEET</span><br />
+			<span style=\"font-size:0.7em;font-weight:Bold;\">Date: $datenow</span><br />
+		</center>
+	</div>
+	
+	<div style=\"width:20%;height:60px;float:right;background-color:White;overflow:hidden;\">
+
+		<table width=\"100%\" class=\"listrow\" >
+			<tr>
+				<th>Applicant No.</th>
+				<th>:</th>
+				<td><b>$applicantno</b></td>
+			</tr>
+			<tr>
+				<th>Crew Code</th>
+				<th>:</th>
+				<td><b>$crewcode</b></td>
+			</tr>
+		</table>
+	</div>
+
+	<div style=\"width:620px;height:80px;float:left;overflow:hidden;\">
+		<div style=\"width:360px;height:80px;float:left;background-color:White;overflow:hidden;\">
+			<table class=\"listrow\" width=\"100%\">
+				<tr>
+					<th width=\"30%\">Name of Seaman</th>
+					<th>:</th>
+					<td>$crewname</td>
+				</tr>
+				<tr>
+					<th>Experience in VMC</th>
+					<th>:</th>
+					<td>$vmcyears&nbsp;Years&nbsp;&nbsp; $vmcmonths&nbsp; Months</td>
+				</tr>
+				<tr>
+					<th>Experience on<br /> 
+						Highest Rank</th>
+					<th>:</th>
+					<td valign=\"top\">$exphighrankyears&nbsp; Year&nbsp;&nbsp; $exphighrankmonths Months</td>
+				</tr>
+			</table>
+		</div>
+		<div style=\"width:260px;height:80px;float:right;background-color:White;overflow:hidden;\">
+			<table class=\"listrow\" width=\"100%\">
+				<tr>
+					<th width=\"45%\">Rank</th>
+					<th>:</th>
+					<td>$currentrank</td>
+				</tr>
+				<tr>
+					<th>Recommended By</th>
+					<th>:</th>
+					<td>$crewrecommendedby</td>
+				</tr>
+				<tr>
+					<th>Experience as Rank</th>
+					<th>:</th>
+					<td>$exprankyears&nbsp; Years&nbsp;&nbsp; $exprankmonths&nbsp; Months</td>
+				</tr>
+				<tr>
+					<th>Rank License</th>
+					<th>:</th>
+					<td>$exphighestrank</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div style=\"width:170px;height:140px;margin:5px;float:right;background-color:White;overflow:hidden;\">
+";
+			$dirfilename = "$basedir/$applicantno.JPG";
+			if (checkpath($dirfilename))
+			{
+				$scale = imageScale($dirfilename,-1,135);
+				$width = $scale[0];
+				$height = $scale[1];
+				
+echo "			<center><img src=\"$dirfilename\" width=\"$width\" height=\"$height\" border=\"1\" /></center> ";
+			}
+			else 
+			{
+echo "			<center><b>[NO PICTURE]</b></center>";
+			}
+echo "
+	</div>
+	
+	<div style=\"width:450px;height:240px;float:left;background-color:White;overflow:hidden;\">
+		<table class=\"listrow\" width=\"100%\">
+			<tr>
+				<th colspan=\"3\" align=\"left\"><u>PERSONAL DATA</u></th>
+			</tr>
+			<tr>
+				<th width=\"20%\">Place of Birth</th>
+				<th>:</th>
+				<td>$crewbplace</td>
+			</tr>
+			<tr>
+				<th>Religion</th>
+				<th>:</th>
+				<td>$crewreligion</td>
+			</tr>
+			<tr>
+				<th>Next of Kin</th>
+				<th>:</th>
+				<td>$crewkinname&nbsp;($crewkinrelation)</td>
+			</tr>
+			<tr>
+				<th>Address</th>
+				<th>:</th>
+				<td>$crewkinaddr1</td>
+			</tr>
+			<tr>
+				<th>Telephone No.</th>
+				<th>:</th>
+				<td>$crewkintelno</td>
+			</tr>
+			<tr>
+				<th>Address</th>
+				<th>:</th>
+				<td>$crewaddress</td>
+			</tr>
+			<tr>
+				<th>Telephone No.</th>
+				<th>:</th>
+				<td>$crewtelno</td>
+			</tr>
+			<tr>
+				<th colspan=\"3\" align=\"left\"><u>EDUCATIONAL ATTAINMENT</u></th>
+			</tr>
+			<tr>
+				<th>School</th>
+				<th>:</th>
+				<td>$creweducschool</td>
+			</tr>
+			<tr>
+				<th>Course</th>
+				<th>:</th>
+				<td>$creweduccourse</td>
+			</tr>
+			<tr>
+				<th>Year</th>
+				<th>:</th>
+				<td>$creweducdategrad</td>
+			</tr>
+		</table>
+	</div>
+	<div style=\"width:350px;height:190px;float:right;background-color:White;overflow:hidden;\">
+		<table class=\"listrow\" width=\"95%\">
+			<tr>
+				<th>Date of Birth</th>
+				<th>:</th>
+				<td>$crewbdate</td>
+			</tr>
+			<tr>
+				<th>Age</th>
+				<th>:</th>
+				<td>$crewage</td>
+			</tr>
+			<tr>
+				<th>Height(cm)</th>
+				<th>:</th>
+				<td>$crewheight</td>
+			</tr>
+			<tr>
+				<th>Weight(kg)</th>
+				<th>:</th>
+				<td>$crewweight</td>
+			</tr>
+			<tr>
+				<th>Civil Status</th>
+				<th>:</th>
+				<td>$crewcivilstatus</td>
+			</tr>
+			<tr>
+				<th>Driver's License</th>
+				<th>:</th>
+				<td>$crewdriverlic</td>
+			</tr>
+			<tr>
+				<th>PEME on Process</th>
+				<th>:</th>
+				<td><b>[$crewmeddate]</b></td>
+			</tr>
+			<tr>
+				<th>HBA1c Test</th>
+				<th>:</th>
+				<td>$crewmedhbatest</td>
+			</tr>
+			<tr>
+				<th>Conducted By</th>
+				<th>:</th>
+				<td>$crewmedclinic</td>
+			</tr>
+			<tr>
+				<th>Result</th>
+				<th>:</th>
+				<td>$crewmedrecommend</td>
+			</tr>
+		</table>
+	</div>
+	
+	<div style=\"width:500px;height:310px;float:left;background-color:White;overflow:hidden;\">
+		<table width=\"100%\" style=\"font-size:0.7em;font-weight:Bold;\" border=1>
+			<tr>
+				<th colspan=\"5\" align=\"left\"><u>DOCUMENTS AND LICENSES</u></th>
+			</tr>
+			<tr>
+				<td width=\"23%\" align=\"center\">Document</td>
+				<td width=\"10%\" align=\"center\">Rank</td>
+				<td width=\"30%\" align=\"center\">Doc. No.</td>
+				<td width=\"17%\" align=\"center\">Issued</td>
+				<td width=\"17%\" align=\"center\">Expiry</td>
+			</tr>
+	";
+			$style = "style=\"color:Blue;\"";
+
+			while ($rowdocuments = mysql_fetch_array($qrydocuments))
+			{
+				$doccode = $rowdocuments["DOCCODE"];
+				$doccode1 = $rowdocuments["DOCCODE1"];
+				$document = $rowdocuments["DOCUMENT"];
+				$documentno = $rowdocuments["DOCNO"];
+				$docissued = $rowdocuments["DATEISSUED"];
+				$docexpired = $rowdocuments["DATEEXPIRED"];
+				$rankcode = $rowdocuments["RANKCODE"];
+				$rankalias = $rowdocuments["ALIAS1"];
+				
+					$doctmp1 = "documentno" . $doccode1;
+					$doctmp2 = "docissued" . $doccode1;
+					$doctmp3 = "docexpired" . $doccode1;
+					$doctmp4 = "rankalias" . $doccode1;
+					
+					if ($documentno != "")
+						$$doctmp1 = "&nbsp;" . $documentno;
+					else 
+						$$doctmp1 = "N/A";
+						
+					if ($docissued != "")
+						$$doctmp2 = date("dMY",strtotime($docissued));
+					else 
+						$$doctmp2 = "N/A";
+						
+					if ($docexpired != "")
+						$$doctmp3 = date("dMY",strtotime($docexpired));
+					else 
+						$$doctmp3 = "N/A";
+						
+					if ($rankalias != "")
+						$$doctmp4 = "&nbsp;" . $rankalias;
+					else 
+						$$doctmp4 = "N/A";
+			}
+
+echo "			
+			<tr>
+				<td>Phil. Seabook</td>
+				<td align=\"center\" $style>$rankaliasF2</td>
+				<td align=\"center\" $style>$documentnoF2</td>
+				<td align=\"center\" $style>$docissuedF2</td>
+				<td align=\"center\" $style>$docexpiredF2</td>
+			</tr>
+			<tr>
+				<td>Phil. License</td>
+				<td align=\"center\" $style>$rankaliasF1</td>
+				<td align=\"center\" $style>$documentnoF1</td>
+				<td align=\"center\" $style>$docissuedF1</td>
+				<td align=\"center\" $style>$docexpiredF1</td>
+			</tr>
+			<tr>
+				<td>STCW</td>
+				<td align=\"center\" $style>$rankalias40</td>
+				<td align=\"center\" $style>$documentno40</td>
+				<td align=\"center\" $style>$docissued40</td>
+				<td align=\"center\" $style>$docexpired40</td>
+			</tr>
+";
+		if ($documentno18 == "N/A")
+		{
+			echo "
+				<tr>
+					<td>COC</td>
+					<td align=\"center\" $style>$rankaliasC0</td>
+					<td align=\"center\" $style>$documentnoC0</td>
+					<td align=\"center\" $style>$docissuedC0</td>
+					<td align=\"center\" $style>$docexpiredC0</td>
+				</tr>
+				";
+		}
+		else 
+		{
+			echo "
+				<tr>
+					<td>COC</td>
+					<td align=\"center\" $style>$rankalias18</td>
+					<td align=\"center\" $style>$documentno18</td>
+					<td align=\"center\" $style>$docissued18</td>
+					<td align=\"center\" $style>$docexpired18</td>
+				</tr>
+				";
+		}
+			
+echo "
+			<tr>
+				<td>Panama Seabook</td>
+				<td align=\"center\" $style>$rankaliasP2</td>
+				<td align=\"center\" $style>$documentnoP2</td>
+				<td align=\"center\" $style>$docissuedP2</td>
+				<td align=\"center\" $style>$docexpiredP2</td>
+			</tr>
+			<tr>
+				<td>Panama License</td>
+				<td align=\"center\" $style>$rankaliasP1</td>
+				<td align=\"center\" $style>$documentnoP1</td>
+				<td align=\"center\" $style>$docissuedP1</td>
+				<td align=\"center\" $style>$docexpiredP1</td>
+			</tr>
+			<tr>
+				<td>GMDSS Seabook</td>
+				<td align=\"center\" $style>$rankalias44</td>
+				<td align=\"center\" $style>$documentno44</td>
+				<td align=\"center\" $style>$docissued44</td>
+				<td align=\"center\" $style>$docexpired44</td>
+			</tr>
+			<tr>
+				<td>GMDSS License</td>
+				<td align=\"center\" $style>$rankalias28</td>
+				<td align=\"center\" $style>$documentno28</td>
+				<td align=\"center\" $style>$docissued28</td>
+				<td align=\"center\" $style>$docexpired28</td>
+			</tr>
+			<tr>
+				<td>Passport</td>
+				<td align=\"center\" $style>$rankalias41</td>
+				<td align=\"center\" $style>$documentno41</td>
+				<td align=\"center\" $style>$docissued41</td>
+				<td align=\"center\" $style>$docexpired41</td>
+			</tr>
+			<tr>
+				<td>U.S. Visa</td>
+				<td align=\"center\" $style>$rankalias42</td>
+				<td align=\"center\" $style>$documentno42</td>
+				<td align=\"center\" $style>$docissued42</td>
+				<td align=\"center\" $style>$docexpired42</td>
+			</tr>
+			<tr>
+				<td>Yellow Fever</td>
+				<td align=\"center\" $style>$rankalias51</td>
+				<td align=\"center\" $style>$documentno51</td>
+				<td align=\"center\" $style>$docissued51</td>
+				<td align=\"center\" $style>$docexpired51</td>
+			</tr>
+			<tr>
+				<td>JIS License</td>
+				<td align=\"center\" $style>$rankaliasJ1</td>
+				<td align=\"center\" $style>$documentnoJ1</td>
+				<td align=\"center\" $style>$docissuedJ1</td>
+				<td align=\"center\" $style>$docexpiredJ1</td>
+			</tr>
+			<tr>
+				<td>HK License</td>
+				<td align=\"center\" $style>$rankaliasH1</td>
+				<td align=\"center\" $style>$documentnoH1</td>
+				<td align=\"center\" $style>$docissuedH1</td>
+				<td align=\"center\" $style>$docexpiredH1</td>
+			</tr>
+";
+
+echo "
+		</table>
+	</div>
+	<div style=\"width:300px;height:310px;background-color:White;overflow:hidden;\">
+		<table width=\"100%\" style=\"font-size:0.7em;font-weight:Bold;\" border=1>
+			<tr>
+				<th colspan=\"3\" align=\"center\"><u>TNKC MANDATORY TRAINING(IN-HOUSE)</u></th>
+			</tr>
+			<tr>
+				<td width=\"33%\" align=\"center\">Training</td>
+				<td width=\"33%\" align=\"center\">Issued</td>
+				<td width=\"33%\" align=\"center\">Grade</td>
+			</tr>
+	";
+			$style = "style=\"color:Blue;\"";
+
+			while ($rowtrainings = mysql_fetch_array($qrytrainings))
+			{
+				$certcode = $rowtrainings["DOCCODE"];
+				$certcode1 = $rowtrainings["DOCCODE1"];
+				$certificate = $rowtrainings["DOCUMENT"];
+				$certno = $rowtrainings["DOCNO"];
+				$certissued = $rowtrainings["DATEISSUED"];
+				$certgrade = $rowtrainings["GRADE"];
+				$certrankcode = $rowtrainings["RANKCODE"];
+				$certrankalias = $rowtrainings["ALIAS1"];
+				
+					$certtmp1 = "certno" . $certcode1;
+					$certtmp2 = "certissued" . $certcode1;
+					$certtmp3 = "certgrade" . $certcode1;
+					$certtmp4 = "certrankalias" . $certcode1;
+					
+					if ($certno != "")
+						$$certtmp1 = "&nbsp;" . $certno;
+					else 
+						$$certtmp1 = "N/A";
+						
+					if ($certissued != "")
+						$$certtmp2 = date("dMY",strtotime($certissued));
+					else 
+						$$certtmp2 = "N/A";
+						
+					if ($certgrade != "")
+						$$certtmp3 = "&nbsp;" . $certgrade;
+					else 
+						$$certtmp3 = "N/A";
+						
+					if ($certrankalias != "")
+						$$certtmp4 = "&nbsp;" . $certrankalias;
+					else 
+						$$certtmp4 = "N/A";
+			}
+
+echo "			
+			<tr>
+				<td>TNKC ISM/SMS</td>
+				<td align=\"center\" $style>$certissuedI1</td>
+				<td align=\"center\" $style>$certgradeI1</td>
+			</tr>
+			<tr>
+				<td>ISPS</td>
+				<td align=\"center\" $style>$certissued57</td>
+				<td align=\"center\" $style>$certgrade57</td>
+			</tr>
+			<tr>
+				<td>BASS</td>
+				<td align=\"center\" $style>$certissuedI0</td>
+				<td align=\"center\" $style>$certgradeI0</td>
+			</tr>
+			<tr>
+				<td>TTOS(PCC)</td>
+				<td align=\"center\" $style>$certissuedI0</td>
+				<td align=\"center\" $style>$certgradeI0</td>
+			</tr>
+			<tr>
+				<td>TTOS(Corona)</td>
+				<td align=\"center\" $style>$certissuedI0</td>
+				<td align=\"center\" $style>$certgradeI0</td>
+			</tr>
+			<tr>
+				<th colspan=\"3\" align=\"left\">&nbsp;</u></th>
+			</tr>
+			<tr>
+				<th colspan=\"3\" align=\"center\"><u>TNKC MANDATORY TRAINING(OUTSIDE)</u></th>
+			</tr>
+			<tr>
+				<td>S.S.B.T</td>
+				<td align=\"center\" $style>$certissued79</td>
+				<td align=\"center\" $style>$certgrade79</td>
+			</tr>
+			<tr>
+				<td>S.S.O</td>
+				<td align=\"center\" $style>$certissued49</td>
+				<td align=\"center\" $style>$certgrade49</td>
+			</tr>
+			<tr>
+				<td>E.R.S</td>
+				<td align=\"center\" $style>$certissuedE1</td>
+				<td align=\"center\" $style>$certgradeE1</td>
+			</tr>
+			<tr>
+				<td>A.I.S</td>
+				<td align=\"center\" $style>$certissuedA0</td>
+				<td align=\"center\" $style>$certgradeA0</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td align=\"center\">&nbsp;</td>
+				<td align=\"center\">&nbsp;</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td align=\"center\">&nbsp;</td>
+				<td align=\"center\">&nbsp;</td>
+			</tr>
+		</table>
+	</div>
+	
+	<div style=\"width:100%;background-color:White;overflow:hidden;\">
+		
+		<table width=\"100%\" style=\"font-size:0.7em;\" border=1>
+			<tr>
+				<th colspan=\"15\" align=\"left\"><u>EXPERIENCE SEABASED</u></th>
+			</tr>
+			<tr>
+				<th align=\"center\">Company</th>
+				<th align=\"center\">Vessel</th>
+				<th align=\"center\">Rank</th>
+				<th align=\"center\">GRT</th>
+				<th align=\"center\">Engine</th>
+				<th align=\"center\">Type</th>
+				<th align=\"center\">Trade<br />Route</th>
+				<th align=\"center\">BHP</th>
+				<th align=\"center\">Embkd</th>
+				<th align=\"center\">Disembkd</th>
+				<th align=\"center\">Mo</th>
+				<th align=\"center\">Reason</th>
+				<th align=\"center\">Pro</th>
+				<th align=\"center\">Rank</th>
+				<th align=\"center\">Grd</th>
+			</tr>
+	";
+		
+		
+		while($rowexperience = mysql_fetch_array($qryexperience))
+		{
+			$company = $rowexperience["COMPANY"];
+			$vessel = $rowexperience["VESSEL"];
+			$rankalias = $rowexperience["RANKALIAS"];
+			$grosston = $rowexperience["GROSSTON"];
+			$engine = $rowexperience["ENGINE"];
+			$vesseltype = $rowexperience["VESSELTYPECODE"];
+			$traderoute = $rowexperience["TRADEROUTECODE"];
+			$enginepower = $rowexperience["ENGINEPOWER"];
+			$dateemb = $rowexperience["DATEEMB"];
+			$datedisemb = $rowexperience["DATEDISEMB"];
+			if ($rowexperience["DISEMBREASONCODE"] != "")
+				$disembreasoncode = $rowexperience["DISEMBREASONCODE"];
+			else 
+				$disembreasoncode = "--";
+			
+			$months = round(((strtotime($datedisemb) - strtotime($dateemb)) / 86400) / 30);
+			
+			$dateembview = date("dMY",strtotime($dateemb));
+			$datedisembview = date("dMY",strtotime($datedisemb));
+			
+			echo "
+			<tr>
+				<td align=\"left\">$company</td>
+				<td align=\"left\">$vessel</td>
+				<td align=\"center\">$rankalias</td>
+				<td align=\"right\">&nbsp;$grosston</td>
+				<td align=\"center\">&nbsp;$engine</td>
+				<td align=\"center\">$vesseltype</td>
+				<td align=\"center\">$traderoute</td>
+				<td align=\"center\">&nbsp;$enginepower</td>
+				<td align=\"center\">$dateembview</td>
+				<td align=\"center\">$datedisembview</td>
+				<td align=\"center\">$months</td>
+				<td align=\"center\">&nbsp;$disembreasoncode</td>
+				<td align=\"center\">---</td>
+				<td align=\"center\">---</td>
+				<td align=\"right\">---</td>
+			</tr>
+			";
+		}
+
+	echo "
+		</table>
+		
+		<br /><br />
+	
+	</div>
+
+</div>
+
+	<input type=\"hidden\" name=\"actiontxt\" />
+	<input type=\"hidden\" name=\"appno\" value=\"$applicantno\" />
+	<input type=\"hidden\" name=\"applicantno\" value=\"$applicantno\" />
+
+</form>
+
+<form enctype=\"multipart/form-data\" method=\"POST\" name=\"fileupload\">
+
+	<div style=\"width:823px;height:75px;background-color:#DCDCDC;margin-left:10px;margin-top:10px;border:1px solid black;\" >
+		<span class=\"sectiontitle\">PICTURE UPLOAD</span>
+		
+		<table width=\"100%\" class=\"listrow\">
+			<tr>
+				<th>Filename:</th>
+			</tr>
+			<tr>
+				<td>
+					<input name=\"uploadedfile\" type=\"file\" size=\"30\" $disableupload />
+					<input type=\"button\" value=\"Upload\" onCLick=\"actiontxt.value='upload';fileupload.submit();\" $disableupload />
+				</td>
+			</tr>
+			<tr>
+				<td>$uploadmsg</td>
+			</tr>
+		</table>
+	</div>
+
+	<input type=\"hidden\" name=\"actiontxt\" />
+	<input type=\"hidden\" name=\"applicantno\" value=\"$applicantno\" />
+			
+</form>
+
+<!--
+<form name=\"repappfront\" action=\"repappfront.php\" target=\"repappfront\" method=\"GET\">
+	<input type=\"hidden\" name=\"applicantno\">
+</form>
+
+<form name=\"repappfront2\" action=\"repappfront2.php\" target=\"repappfront2\" method=\"GET\">
+	<input type=\"hidden\" name=\"applicantno\">
+</form>
+
+-->
+
+</body>
+
+</html>
+
+"
+	
+	
+	
+	
+	
+	
+	
+?>

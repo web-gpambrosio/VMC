@@ -1,0 +1,528 @@
+<?php
+			$managementcode = "";
+
+			if ($applicantno != "")
+			{
+				$disablebuttons = "";
+				
+				$qrypersonal = mysql_query("SELECT CREWCODE,CONCAT(FNAME,', ',GNAME,' ' ,MNAME) AS NAME,c.STATUS,SIZECOVERALL,SIZERAINCOAT,SIZESHOES,
+												c.ADDRESS,c.MUNICIPALITY,c.CITY,c.ZIPCODE,ab.BARANGAY,at.TOWN,ap.PROVINCE,
+												CONCAT(ADDRESS,', ',MUNICIPALITY,', ',CITY,' ',ZIPCODE) AS ADDRESS1,
+												CONCAT(ADDRESS,', ',ab.BARANGAY,', ',at.TOWN,', ',ap.PROVINCE,' ',ZIPCODE) AS ADDRESS2,
+												ab.BRGYCODE,at.TOWNCODE,ap.PROVCODE,
+												TELNO,CEL1,CEL2,CEL3,BIRTHDATE,BIRTHPLACE,CIVILSTATUS,RELIGION,WEIGHT,HEIGHT,
+												IF(c.RECOMMENDEDBY IS NULL,a.RECOMMENDEDBY,c.RECOMMENDEDBY) AS RECOMMENDEDBY,DRIVERLICENSE,
+												IF (cs.APPLICANTNO IS NOT NULL,'SCHOLAR',NULL) AS SCHOLAR,
+												IF (cf.APPLICANTNO IS NOT NULL,'FASTTRACK',NULL) AS FASTTRACK,
+												s.DESCRIPTION AS SCHOLARTYPE,f.FASTTRACK AS FASTTRACKTYPE,
+												c.HIRINGRESTRICTION,c.UTILITY
+												FROM crew c
+												LEFT JOIN applicant a ON a.APPLICANTNO=c.APPLICANTNO
+												LEFT JOIN rank r1 ON r1.RANKCODE=a.CHOICE1
+												LEFT JOIN addrprovince ap ON ap.PROVCODE=c.PROVINCECODE
+												LEFT JOIN addrtown at ON at.TOWNCODE=c.TOWNCODE AND at.PROVCODE=c.PROVINCECODE
+												LEFT JOIN addrbarangay ab ON ab.BRGYCODE=c.BARANGAYCODE AND ab.TOWNCODE=c.TOWNCODE AND ab.PROVCODE=c.PROVINCECODE
+												LEFT JOIN crewscholar cs ON cs.APPLICANTNO=c.APPLICANTNO
+												LEFT JOIN scholar s ON s.SCHOLASTICCODE=cs.SCHOLASTICCODE
+												LEFT JOIN crewfasttrack cf ON cf.APPLICANTNO=c.APPLICANTNO
+												LEFT JOIN fasttrack f ON f.FASTTRACKCODE=cf.FASTTRACKCODE
+												WHERE c.APPLICANTNO=$applicantno") or die(mysql_error());
+				
+
+				$rowpersonal = mysql_fetch_array($qrypersonal);
+				
+				$crewscholar = $rowpersonal["SCHOLAR"];
+				$crewfasttrack = $rowpersonal["FASTTRACK"];
+				$crewscholartype = $rowpersonal["SCHOLARTYPE"];
+				$crewfasttracktype = $rowpersonal["FASTTRACKTYPE"];
+				
+				//SIZECOVERALL,SIZERAINCOAT,SIZESHOES
+				$crewsizecoverall = $rowpersonal["SIZECOVERALL"];
+				$crewsizeraincoat = $rowpersonal["SIZERAINCOAT"];
+				$crewsizeshoes = $rowpersonal["SIZESHOES"];
+				$crewhiringrestriction = $rowpersonal["HIRINGRESTRICTION"];
+				
+				
+				
+				if (!empty($rowpersonal["UTILITY"]))
+					$crewutility = $rowpersonal["UTILITY"];
+				else 
+					$crewutility = "";
+					
+				if (empty($crewscholar) && empty($crewfasttrack) && empty($crewscholartype) && empty($crewfasttracktype))
+					$crewregular = "REGULAR";
+				else 
+					$crewregular = "";
+				
+				$crewcode = $rowpersonal["CREWCODE"];
+				$crewname = $rowpersonal["NAME"];
+				
+				$xaddress = $rowpersonal["ADDRESS"];
+				$xmunicipality = $rowpersonal["MUNICIPALITY"];
+				$xcity = $rowpersonal["CITY"];
+				$xzipcode = $rowpersonal["ZIPCODE"];
+				
+				$xbarangay = $rowpersonal["BARANGAY"];
+				$xtown = $rowpersonal["TOWN"];
+				$xprovince = $rowpersonal["PROVINCE"];
+				
+				$xprovcode = $rowpersonal["PROVCODE"];
+				$xtowncode = $rowpersonal["TOWNCODE"];
+				$xbrgycode = $rowpersonal["BRGYCODE"];
+				
+//				if (!empty($rowpersonal["ADDRESS2"]))
+//					$crewaddress = $rowpersonal["ADDRESS2"];
+//				else 
+//				{
+					if (!empty($xprovcode) && !empty($xtowncode))
+					{
+						$crewaddress = $xaddress . ", ";
+						
+						if (!empty($xbrgycode))
+							$crewaddress .= $xbarangay . ", ";
+							
+						if (!empty($xtowncode))
+							$crewaddress .= $xtown . ", ";
+							
+						if (!empty($xprovcode))
+							$crewaddress .= $xprovince;
+							
+						if (!empty($xzipcode))
+							$crewaddress .= " " . $xzipcode;
+					}
+					else 
+						$crewaddress = $rowpersonal["ADDRESS1"];
+//				}
+					
+				if (empty($crewaddress))
+					$crewaddress = $xaddress . " " . $xmunicipality . " " . $xcity . " " . $xzipcode;
+					
+				$crewdriverlic = $rowpersonal["DRIVERLICENSE"];
+				$crewtelno1 = $rowpersonal["TELNO"];
+				$crewtelno = $rowpersonal["TELNO"];
+				$crewcel1 = $rowpersonal["CEL1"];
+				$crewcel2 = $rowpersonal["CEL2"];
+				$crewcel3 = $rowpersonal["CEL3"];
+				
+				$crewmobile = $crewcel1;
+				
+				if (!empty($crewcel1))
+					$crewtelno .= " / $crewcel1";
+				
+				if (!empty($crewcel2))
+				{
+					$crewtelno .= " / $crewcel2";
+					$crewmobile .= " / $crewcel2";
+				}
+				
+				if (!empty($crewcel3))
+				{
+					$crewtelno .= " / $crewcel3";
+					$crewmobile .= " / $crewcel3";
+				}
+				
+				$crewbdate = date("dMY",strtotime($rowpersonal["BIRTHDATE"]));
+				$crewage = floor((strtotime($currentdate) - strtotime($crewbdate)) / (86400*365.25));
+				$crewbplace = $rowpersonal["BIRTHPLACE"];
+				
+				switch ($rowpersonal["CIVILSTATUS"])
+				{
+					case "S" : $crewcivilstatus = "Single"; break;
+					case "M" : $crewcivilstatus = "Married"; break;
+					case "W" : $crewcivilstatus = "Widower"; break;
+					case "P" : $crewcivilstatus = "Separated"; break;
+				}
+				
+				$crewreligion = $rowpersonal["RELIGION"];
+				$crewweight = $rowpersonal["WEIGHT"];
+				$crewheight = $rowpersonal["HEIGHT"];
+				$crewrecommendedby = $rowpersonal["RECOMMENDEDBY"];
+				
+				
+				$qrywithvmc = mysql_query("SELECT CCID FROM crewchange where APPLICANTNO=$applicantno AND DATEEMB < CURRENT_DATE") or die(mysql_error());
+				
+				if(mysql_num_rows($qrywithvmc) > 0)
+				{
+					$qryvmcexpyears = mysql_query("SELECT SUM(MONTHS) AS VMCEXPERIENCE
+													FROM 
+													(
+														SELECT RANKCODE,SUM(DIFF) AS MONTHS
+														FROM
+														(
+															SELECT RANKCODE,
+															ROUND(
+																	DATEDIFF(
+																		IF(
+																			IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB) > CURRENT_DATE,
+																			CURRENT_DATE,IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB)
+																		),DATEEMB)/30) AS DIFF
+															FROM crewchange where APPLICANTNO=$applicantno
+															ORDER BY DATEDISEMB DESC
+														) x
+														GROUP BY RANKCODE
+													) y
+											") or die(mysql_error());
+					
+					$rowvmcexpyears = mysql_fetch_array($qryvmcexpyears);
+					$vmcexperience = $rowvmcexpyears["VMCEXPERIENCE"];
+					$vmcyears = floor($vmcexperience / 12);
+					$vmcmonths = $vmcexperience % 12;
+				}
+				else
+				{
+					$vmcexperience = 0;
+					$vmcyears = 0;
+					$vmcmonths = 0;
+				}
+				
+//				$qrycurrentrank = mysql_query("SELECT v.MANAGEMENTCODE,cc.RANKCODE,r.RANK,r.ALIAS1
+//												FROM crewchange cc
+//												LEFT JOIN rank r ON r.RANKCODE=cc.RANKCODE
+//												LEFT JOIN vessel v ON v.VESSELCODE=cc.VESSELCODE
+//												where cc.APPLICANTNO=$applicantno
+//												ORDER BY DATEDISEMB DESC
+//											") or die(mysql_error());
+
+
+				$qrycurrentrank = mysql_query("SELECT z.DATEDISEMB,v.MANAGEMENTCODE,v.DIVCODE,z.RANKCODE,r.RANK,r.ALIAS1 FROM 
+												(
+													SELECT '1' AS VMC,RANKCODE,DATEDISEMB,VESSELCODE
+													FROM
+														(
+														SELECT RANKCODE,VESSELCODE,
+														IF(IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB) > CURRENT_DATE,
+															CURRENT_DATE,IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB)) AS DATEDISEMB
+														FROM crewchange where APPLICANTNO=$applicantno AND DATEEMB < CURRENT_DATE
+														ORDER BY DATEDISEMB DESC
+														) x
+													
+													UNION					
+																		
+													SELECT '2' AS VMC,RANKCODE,DATEDISEMB,NULL
+													FROM
+														(
+														SELECT RANKCODE,DATEDISEMB
+														FROM crewexperience where APPLICANTNO=$applicantno
+														ORDER BY DATEDISEMB DESC
+														) y
+												) z
+												LEFT JOIN rank r ON r.RANKCODE=z.RANKCODE
+												LEFT JOIN vessel v ON v.VESSELCODE=z.VESSELCODE
+												ORDER BY DATEDISEMB DESC
+											") or die(mysql_error());
+				
+				$rowcurrentrank = mysql_fetch_array($qrycurrentrank);
+				$currentrank = $rowcurrentrank["RANK"];
+				$currentrankcode = $rowcurrentrank["RANKCODE"];
+				$managementcode = $rowcurrentrank["MANAGEMENTCODE"];
+				$divcode = $rowcurrentrank["DIVCODE"];
+				
+				
+				if (empty($currentrank))
+				{
+					$qrycurrentrank2 = mysql_query("SELECT IF(ap.VMCRANKCODE = '' OR ap.VMCRANKCODE IS NULL,r1.RANK,r2.RANK) AS RANK,
+													IF(ap.VMCRANKCODE = '' OR ap.VMCRANKCODE IS NULL,r1.RANKCODE,r2.RANKCODE) AS RANKCODE
+													FROM applicant a
+													LEFT JOIN applicantstatus ap ON ap.APPLICANTNO=a.APPLICANTNO
+													LEFT JOIN rank r1 ON r1.RANKCODE=a.CHOICE1
+													LEFT JOIN rank r2 ON r2.RANKCODE=ap.VMCRANKCODE
+													WHERE a.APPLICANTNO=$applicantno") or die(mysql_error());
+					$rowcurrentrank2 = mysql_fetch_array($qrycurrentrank2);
+					
+					$currentrank = $rowcurrentrank2["RANK"];
+					$currentrankcode = $rowcurrentrank2["RANKCODE"];
+				}
+				
+				if ($managementcode == "" || $managementcode == "101" || $managementcode == "102")
+					$tnkc = 1;
+				
+				$qryexpasrank = mysql_query("SELECT y.RANKCODE,RANK,ALIAS1,SUM(MONTHS) AS EXPASRANK
+											FROM
+												(
+													SELECT '1' AS VMC,RANKCODE,SUM(DIFF) AS MONTHS
+													FROM
+													(
+														SELECT RANKCODE,
+														ROUND(
+																DATEDIFF(
+																	IF(
+																		IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB) > CURRENT_DATE,
+																		CURRENT_DATE,IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB)
+																	),DATEEMB)/30) AS DIFF
+														FROM crewchange where APPLICANTNO=$applicantno
+														AND RANKCODE='$currentrankcode' AND DATEEMB < CURRENT_DATE
+														ORDER BY DATEDISEMB DESC
+													) x
+													GROUP BY RANKCODE
+												
+													UNION
+													
+													SELECT '2' AS VMC,RANKCODE,SUM(DIFF) AS MONTHS
+													FROM
+													(
+														SELECT RANKCODE,ROUND(DATEDIFF(DATEDISEMB,DATEEMB)/30) AS DIFF
+														FROM crewexperience where APPLICANTNO=$applicantno
+														AND RANKCODE='$currentrankcode' AND DATEEMB < CURRENT_DATE
+														ORDER BY DATEDISEMB DESC
+													) x
+													GROUP BY RANKCODE
+												) y
+											LEFT JOIN rank r ON r.RANKCODE=y.RANKCODE
+											GROUP BY y.RANKCODE
+									") or die(mysql_error());
+				//WHERE y.RANKCODE='$currentrankcode'
+				$rowexpasrank = mysql_fetch_array($qryexpasrank);
+				$expcurrentrank = $rowexpasrank["EXPASRANK"];
+//				echo "XXX" . $expcurrentrank . "ZZZ";
+				$exprankyears = floor($expcurrentrank / 12);
+				$exprankmonths = $expcurrentrank % 12;
+				
+				
+				$qryhighestrank = mysql_query("SELECT DISTINCT x.RANKCODE,r.RANK
+												FROM
+												(
+													SELECT RANKCODE FROM crewchange WHERE APPLICANTNO=$applicantno
+													UNION
+													SELECT RANKCODE FROM crewexperience WHERE APPLICANTNO=$applicantno
+												) x
+												LEFT JOIN rank r ON r.RANKCODE=x.RANKCODE
+												ORDER BY r.RANKING
+											") or die(mysql_error());
+				
+				$rowhighestrank = mysql_fetch_array($qryhighestrank);
+				$exphighestrank = $rowhighestrank["RANK"];
+				$exphighestrankcode = $rowhighestrank["RANKCODE"];
+				
+				
+				$qryexphighestrank = mysql_query("SELECT y.RANKCODE,RANK,ALIAS1,SUM(MONTHS) AS EXPHIGHRANK
+											FROM
+												(
+													SELECT '1' AS VMC,RANKCODE,SUM(DIFF) AS MONTHS
+													FROM
+													(
+														SELECT RANKCODE,
+														ROUND(
+																DATEDIFF(
+																	IF(
+																		IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB) > CURRENT_DATE,
+																		CURRENT_DATE,IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB)
+																	),DATEEMB)/30) AS DIFF
+														FROM crewchange where APPLICANTNO=$applicantno
+														AND RANKCODE='$exphighestrankcode' AND DATEEMB < CURRENT_DATE
+														ORDER BY DATEDISEMB DESC
+													) x
+													GROUP BY RANKCODE
+												
+													UNION
+													
+													SELECT '2' AS VMC,RANKCODE,SUM(DIFF) AS MONTHS
+													FROM
+													(
+														SELECT RANKCODE,ROUND(DATEDIFF(DATEDISEMB,DATEEMB)/30) AS DIFF
+														FROM crewexperience where APPLICANTNO=$applicantno
+														AND RANKCODE='$exphighestrankcode' AND DATEEMB < CURRENT_DATE
+														ORDER BY DATEDISEMB DESC
+													) x
+													GROUP BY RANKCODE
+												) y
+											LEFT JOIN rank r ON r.RANKCODE=y.RANKCODE
+											GROUP BY y.RANKCODE
+									") or die(mysql_error());
+				//WHERE y.RANKCODE='$exphighestrankcode'
+				$rowexphighestrank = mysql_fetch_array($qryexphighestrank);
+				$exphighrank = $rowexphighestrank["EXPHIGHRANK"];
+				$exphighrankyears = floor($exphighrank / 12);
+
+				$exphighrankmonths = $exphighrank % 12;
+				
+				$qryfamily = mysql_query("SELECT CONCAT(FNAME,', ',GNAME,' ' ,MNAME) AS NAME,TELNO,f.RELATION,
+										CONCAT(c.ADDRESS,', ',c.MUNICIPALITY,', ',c.CITY) AS ADDRESS1,
+										CONCAT(c.ADDRESSOTHERS,', ',ab.BARANGAY,', ',at.TOWN,', ',ap.PROVINCE) AS ADDRESS
+										FROM crewfamily c
+										LEFT JOIN familyrelation f ON f.RELCODE=c.RELCODE
+										LEFT JOIN addrprovince ap ON ap.PROVCODE=c.PROVINCECODE
+										LEFT JOIN addrtown at ON at.TOWNCODE=c.TOWNCODE AND at.PROVCODE=c.PROVINCECODE
+										LEFT JOIN addrbarangay ab ON ab.BRGYCODE=c.BARANGAYCODE AND ab.TOWNCODE=c.TOWNCODE AND ab.PROVCODE=c.PROVINCECODE
+										WHERE APPLICANTNO=$applicantno
+										ORDER BY f.POSITION DESC LIMIT 1") or die(mysql_error());
+			
+				if (mysql_num_rows($qryfamily) > 0)
+				{
+					$rowfamily = mysql_fetch_array($qryfamily);
+					$crewkinname = $rowfamily["NAME"];
+					if ($rowfamily["ADDRESS1"] != "")
+						$crewkinaddr1 = $rowfamily["ADDRESS1"];
+					else 
+						$crewkinaddr1 = $rowfamily["ADDRESS"];
+						
+					if (!empty($rowfamily["TELNO"]))
+						$crewkintelno = $rowfamily["TELNO"];
+					else 
+						$crewkintelno = "---";
+						
+					$crewkinrelation = $rowfamily["RELATION"];
+				}
+				
+				
+				$qrymedical = mysql_query("SELECT left(CLINIC,14) AS CLINIC,CLINIC AS CLINIC2,DATECHECKUP,HBATEST,cr.RECOMMENDATION
+											FROM crewmedical cm
+											LEFT JOIN clinic c ON c.CLINICID=cm.CLINICID
+											LEFT JOIN clinicrecommend cr ON cr.RECOMMENDCODE=cm.RECOMMENDCODE
+											WHERE APPLICANTNO=$applicantno
+											ORDER BY DATECHECKUP DESC LIMIT 1") or die(mysql_error());
+				
+				if (mysql_num_rows($qrymedical) > 0)
+				{
+					$rowmedical = mysql_fetch_array($qrymedical);
+					$crewmeddate = date("dMY",strtotime($rowmedical["DATECHECKUP"]));
+					$crewmedclinic = $rowmedical["CLINIC"];
+					$crewmedclinic2 = $rowmedical["CLINIC2"];
+					if ($rowmedical["HBATEST"] == 1)
+						$crewmedhbatest = "PASSED";
+					else 
+						$crewmedhbatest = "---";
+						
+					$crewmedrecommend = $rowmedical["RECOMMENDATION"];
+					
+				}
+				
+				
+				$qryeducation = mysql_query("SELECT IF(ce.SCHOOLID IS NULL,ce.SCHOOLOTHERS,ms.SCHOOL) AS SCHOOL,
+											IF(ce.COURSEID IS NULL,ce.COURSEOTHERS,mc.COURSE) AS COURSE,
+											IF(ce.DATEGRADUATED IS NULL,'',ce.DATEGRADUATED) AS DATEGRADUATED,
+											IF(ce.DATEGRADUATED IS NULL,'No','Yes') AS GRADYESNO
+											FROM creweducation ce
+											LEFT JOIN maritimeschool ms ON ce.SCHOOLID=ms.SCHOOLID
+											LEFT JOIN maritimecourses mc ON ce.COURSEID=mc.COURSEID
+											WHERE ce.APPLICANTNO=$applicantno") or die(mysql_error());
+				
+				if (mysql_num_rows($qryeducation) > 0)
+				{
+					$roweducation = mysql_fetch_array($qryeducation);
+					
+					$creweducschool = $roweducation["SCHOOL"];
+					$creweduccourse = $roweducation["COURSE"];
+					$creweducdategrad = date("Y",strtotime($roweducation["DATEGRADUATED"]));
+					$creweducgrad = $roweducation["GRADYESNO"];
+				}
+				
+				
+				$qrydocuments = mysql_query("SELECT y.*,r.ALIAS1,r.RANK 
+											FROM (
+													SELECT cd.DOCCODE AS DOCCODE1,x.*,cd.DOCUMENT,cd.TYPE,cd.HASEXPIRY
+													FROM crewdocuments cd
+													LEFT JOIN (SELECT cds.DOCCODE,cds.DOCNO,cds.DATEISSUED,cds.DATEEXPIRED,cds.RANKCODE
+																FROM crewdocstatus cds
+																WHERE cds.DOCCODE IN ('F2','F1','18','C0','P2','P1','41','42','51','J1','H1','44','28','A4','32','16')
+																AND cds.APPLICANTNO=$applicantno
+															) x ON x.DOCCODE=cd.DOCCODE
+													WHERE cd.DOCCODE IN ('F2','F1','18','C0','P2','P1','41','42','51','J1','H1','44','28','A4','32','16')
+												) y
+											LEFT JOIN rank r ON r.RANKCODE=y.RANKCODE
+											") or die(mysql_error());
+		
+				
+				$qrytrainings = mysql_query("SELECT y.*,r.ALIAS1,r.RANK 
+											FROM (
+													SELECT cd.DOCCODE AS DOCCODE1,x.*,cd.DOCUMENT,cd.TYPE,cd.HASEXPIRY
+													FROM crewdocuments cd
+													LEFT JOIN (SELECT ccs.DOCCODE,ccs.DOCNO,ccs.DATEISSUED,ccs.GRADE,ccs.RANKCODE
+																FROM crewcertstatus ccs
+																WHERE ccs.DOCCODE IN ('I1','57','I4','I0','79','49','E1','A0','T1','T8','40','T0','54')
+																AND ccs.APPLICANTNO=$applicantno
+															) x ON x.DOCCODE=cd.DOCCODE
+													WHERE cd.DOCCODE IN ('I1','57','I4','I0','79','49','E1','A0','T1','T8','40','T0','54')
+												) y
+											LEFT JOIN rank r ON r.RANKCODE=y.RANKCODE
+											") or die(mysql_error());
+				
+				$qryexperience = mysql_query("SELECT * FROM
+												(
+													SELECT '1' AS POS,cc.CCID,'Veritas' AS COMPANY,v.MANAGEMENTCODE,LEFT(v.ALIAS2,10) AS VESSEL,v.VESSEL AS VESSELNAME,v.VESSELCODE,r.ALIAS1 AS RANKALIAS,v.GROSSTON,vs.ENGINEMAIN AS ENGINE,
+													vt.VESSELTYPECODE,v.TRADEROUTECODE,vs.ENGINEPOWER,
+													cc.DATEEMB,
+													IF(IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB) > CURRENT_DATE,CURRENT_DATE,IF(DATECHANGEDISEMB IS NULL,DATEDISEMB,DATECHANGEDISEMB)) AS DATEDISEMB,
+													cc.DISEMBREASONCODE,dr.REASON AS DISEMBREASON,
+													vt.VESSELTYPE,tr.TRADEROUTE,cc.DEPMNLDATE,cc.ARRMNLDATE,cp1.CCID AS CHKPROMOTE,NULL AS MANNING,cp.CCID AS CCID2
+													FROM crewchange cc
+													LEFT JOIN vessel v ON v.VESSELCODE=cc.VESSELCODE
+													LEFT JOIN rank r ON r.RANKCODE=cc.RANKCODE
+													LEFT JOIN vesselspecs vs ON vs.VESSELCODE=v.VESSELCODE
+													LEFT JOIN vesseltype vt ON vt.VESSELTYPECODE=v.VESSELTYPECODE
+													LEFT JOIN vesselsize vz ON vz.VESSELSIZECODE=v.VESSELSIZECODE
+													LEFT JOIN disembarkreason dr ON dr.DISEMBREASONCODE=cc.DISEMBREASONCODE
+													LEFT JOIN traderoute tr ON tr.TRADEROUTECODE=v.TRADEROUTECODE
+													LEFT JOIN crewpromotionrelation cp1 ON cc.CCID=cp1.CCIDPROMOTE
+													LEFT JOIN crewpromotionrelation cp ON cc.CCID=cp.CCID
+													WHERE cc.DATEEMB <= CURRENT_DATE AND cc.APPLICANTNO=$applicantno
+													
+													UNION
+													
+													SELECT '2' AS POS,NULL AS CCID,IF (ce.MANNINGCODE = '',LEFT(ce.MANNINGOTHERS,10),LEFT(m.MANNING,10)) AS COMPANY,
+													NULL,LEFT(ce.VESSEL,10) AS VESSEL,ce.VESSEL AS VESSELNAME,NULL AS VESSELCODE,r.ALIAS1 AS RANKALIAS,ce.GROSSTON,ce.ENGINETYPE AS ENGINE,
+													ce.VESSELTYPECODE,ce.TRADEROUTECODE,NULL AS ENGINEPOWER,DATEEMB,DATEDISEMB,ce.DISEMBREASONCODE,
+													dr.REASON AS DISEMBREASON,NULL AS VESSELTYPE,tr.TRADEROUTE,NULL AS DEPMNLDATE,NULL AS ARRMNLDATE,NULL AS CHKPROMOTE,
+													m.MANNING,NULL AS CCID2
+													FROM crewexperience ce
+													LEFT JOIN rank r ON r.RANKCODE=ce.RANKCODE
+													LEFT JOIN manning m ON m.MANNINGCODE=ce.MANNINGCODE
+													LEFT JOIN disembarkreason dr ON dr.DISEMBREASONCODE=ce.DISEMBREASONCODE
+													LEFT JOIN traderoute tr ON tr.TRADEROUTECODE=ce.TRADEROUTECODE
+													WHERE ce.APPLICANTNO=$applicantno
+												) x
+												WHERE x.DATEEMB <= CURRENT_DATE
+												ORDER BY x.DATEDISEMB DESC
+												$explimit
+											") or die(mysql_error());
+					
+				$qrymanagement = mysql_query("SELECT MANAGEMENTCODE,COMPANY FROM
+												(
+													SELECT '1' AS POS,cc.CCID,'Veritas' AS COMPANY,v.MANAGEMENTCODE,LEFT(v.ALIAS2,10) AS VESSEL,v.VESSEL AS VESSELNAME,v.VESSELCODE,r.ALIAS1 AS RANKALIAS,v.GROSSTON,vs.ENGINEMAIN AS ENGINE,
+													vt.VESSELTYPECODE,v.TRADEROUTECODE,vs.ENGINEPOWER,
+													cc.DATEEMB,IF(cc.DATECHANGEDISEMB IS NULL,cc.DATEDISEMB,cc.DATECHANGEDISEMB) AS DATEDISEMB,cc.DISEMBREASONCODE
+													FROM crewchange cc
+													LEFT JOIN vessel v ON v.VESSELCODE=cc.VESSELCODE
+													LEFT JOIN rank r ON r.RANKCODE=cc.RANKCODE
+													LEFT JOIN vesselspecs vs ON vs.VESSELCODE=v.VESSELCODE
+													LEFT JOIN vesseltype vt ON vt.VESSELTYPECODE=v.VESSELTYPECODE
+													LEFT JOIN vesselsize vz ON vz.VESSELSIZECODE=v.VESSELSIZECODE
+													WHERE cc.APPLICANTNO=$applicantno
+													
+													UNION
+													
+													SELECT '2' AS POS,ce.IDNO,IF (ce.MANNINGCODE = '',LEFT(ce.MANNINGOTHERS,10),LEFT(m.MANNING,10)) AS COMPANY,
+													NULL,LEFT(ce.VESSEL,10) AS VESSEL,ce.VESSEL,NULL,r.ALIAS1 AS RANKALIAS,ce.GROSSTON,ce.ENGINETYPE AS ENGINE,
+													ce.VESSELTYPECODE,ce.TRADEROUTECODE,NULL AS ENGINEPOWER,DATEEMB,DATEDISEMB,ce.DISEMBREASONCODE
+													FROM crewexperience ce
+													LEFT JOIN rank r ON r.RANKCODE=ce.RANKCODE
+													LEFT JOIN manning m ON m.MANNINGCODE=ce.MANNINGCODE
+													LEFT JOIN disembarkreason dr ON dr.DISEMBREASONCODE=ce.DISEMBREASONCODE
+													WHERE ce.APPLICANTNO=$applicantno
+												) x
+												ORDER BY x.DATEDISEMB DESC
+												LIMIT 1
+											") or die(mysql_error());
+				
+				
+			}
+			else 
+			{
+				$disablebuttons = "disabled=\"disabled\"";
+			}
+
+	
+	$qrydisembreason = mysql_query("SELECT DISEMBREASONCODE,REASON FROM disembarkreason WHERE STATUS=1 AND DISEMBREASONCODE<>'OTH'") or die(mysql_error());
+	
+	$legend = "";
+	while ($rowdisembreason = mysql_fetch_array($qrydisembreason))
+	{
+		$reasoncode=$rowdisembreason["DISEMBREASONCODE"];
+		$reason=$rowdisembreason["REASON"];
+		
+		if (!empty($legend))
+			$legend .= "&nbsp;&nbsp;<b>$reasoncode</b> - $reason";
+		else 
+			$legend = "<b>" . $reasoncode . "</b> - " . $reason;
+	}
+			
+?>

@@ -1,0 +1,33 @@
+body { 
+font-family: Arial;
+color:#333333;
+font-size:12px;
+text-decoration:none;
+background-image:url(../images/background.gif);
+background-repeat:repeat;
+}
+a { text-decoration:none }
+
+.green { color:#006600 }
+
+.blue { color:#0000FF }
+.red { color:#FF0000 }
+.black { color:#000000 }
+.requiredx { color:#FF0000; font-size:12px }
+.warning_message { color:#FF0000; font-size:10px }
+.blackxx { color:#000000; font-size:13px }
+
+.green2 { color:#006600; font-size:10px }
+
+.label { color:#666666; font-size:8px }
+.admin_label { color:#3399ff; font-size:12px; font-family:Times New Roman; }
+
+.main_body { color:#0000FF; font-size:14px }
+
+.logtext { width:200px }
+.s { margin-bottom :0px; }
+.a { margin:20px 0px; padding:0px; }
+.warning_login { font-size:12px; color:#FF0000; }
+.menu { font-size:12px; color:#333333; }
+.ahref { color:#0055FF }
+.ahref2 { color:#FF0000 }

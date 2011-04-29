@@ -1,0 +1,64 @@
+<?php
+require_once("/usr/local/www/data/veritas/Mailclass.inc");
+require_once("/usr/local/www/data/veritas/config.php");
+
+	// instantiate the class
+	$mailer = new VMCMailer();
+	
+	// Set the subject
+	$mailer->Subject = $subject;
+	
+	$mailer->IsHTML(true);
+	//$mailer->IsSMTP();
+	
+	// Body
+	$mailer->Body = $body;
+	
+	
+	switch ($sendemailtype)
+	{
+		case "1"	:  //STAFF BIRTHDAY
+			
+				$bdayceleb = explode("|",$celebrants);
+				$cnt = count($bdayceleb);
+				
+				for ($i=0;$i<$cnt;$i++)
+				{
+					$bdaydtls = explode(",",$bdayceleb[$i]);
+					$emailto = $bdaydtls[0];
+					$vmcemail = $bdaydtls[1];
+					
+					$mailer->AddAddress($vmcemail, $emailto);
+					$mailer->AddBCC("gino.ambrosio@firstorient.com.ph", "From Veripro");
+					$mailer->AddBCC("jien@veritas.com.ph", "Jien Simbulan");
+				}
+			
+			break;
+			
+		case "2"	:  //CREW BIRTHDAY
+			
+			
+			break;
+			
+		case "3"	:
+			
+			
+			break;
+	}
+	
+
+	
+	
+	
+////		$mailer->AddAddress("jmarquez@veritas.com.ph", "Jiro M. Marquez");
+////		$mailer->AddAddress("dan.cardozo@veritas.com.ph", "Danilo Cardozo");
+////		$mailer->AddAddress("romo@veritas.com.ph", "Felix M. Romo");
+////		$mailer->AddAddress("alvaro@veritas.com.ph", "Andres F. Alvaro");
+////		$mailer->AddAddress("vmcsupvr@veritas.com.ph", "VMC Supervisors");
+		
+//			$mailer->AddCC("jien@veritas.com.ph", "Jien Simbulan");
+
+//			$mailer->AddBCC("gino.ambrosio@yahoo.com.ph", "Gino (BCC)");
+
+
+?>

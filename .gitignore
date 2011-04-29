@@ -1,0 +1,9 @@
+*.php_*
+*.js_*
+*.db
+*.sql
+*~
+nbproject/
+online/
+online_temp/
+comments/
